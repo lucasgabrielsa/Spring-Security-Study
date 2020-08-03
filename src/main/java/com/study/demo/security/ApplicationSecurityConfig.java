@@ -12,8 +12,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
-import static com.study.demo.security.ApplicationUserRole.ADMIN;
-import static com.study.demo.security.ApplicationUserRole.STUDENT;
+import static com.study.demo.security.ApplicationUserRole.*;
 
 @Configuration
 @EnableWebSecurity
@@ -29,9 +28,10 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/", "index", "/css/*", "/js/*")
-                .permitAll()
+                .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
+                .antMatchers("/api/**").hasRole(STUDENT.name())
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -50,9 +50,16 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
         UserDetails linda = User.builder()
                 .username("linda")
                 .password(passwordEncoder.encode("password123"))
-                .roles(ADMIN.name())
+                .roles(ADMIN.name()) // ROLE_ADMIN
                 .build();
 
-        return new InMemoryUserDetailsManager(joneDoe, linda);
+        UserDetails tom = User.builder()
+                .username("tom")
+                .password(passwordEncoder.encode("password123"))
+                .roles(ADMIN_TRAINEE.name()) // ROLE_ADMIN_TRAINEE
+                .build();
+
+
+        return new InMemoryUserDetailsManager(joneDoe, linda, tom);
     }
 }
